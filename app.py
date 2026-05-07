@@ -473,9 +473,71 @@ def show_seo_generator():
                 st.warning("商品名を入力してください。")
             else:
                 prompt = f"""
-あなたは自動車部品のEC販売に特化した凄腕のマーケティング担当者です。
-入力情報({product_name}, {product_features})に基づき、アスタリスクを使用しない形式で、楽天市場・Yahoo!ショッピング・Amazonに最適化したタイトル案、商品説明文、および仮想レビュー3件を出力してください。
-未入力の車種名や型式、純正番号は絶対に捏造しないでください。
+あなたは自動車部品のEC販売に特化した、凄腕のマーケティング担当者です。
+指示された4つのセクションについて、指定のフォーマットで出力してください。
+
+【厳報・最優先事項】
+・入力情報({product_name}, {product_features})にない情報は、決して捏造（ハルシネーション）しないでください。
+・特定の車種名、型式、純正番号などが入力されていない場合は、それらを勝手に想像して含めてはいけません。
+・不明な情報は含めず、与えられた情報のみで最大限の効果を発揮するテキストを作成してください。
+
+【対象商品】
+商品名: {product_name}
+商品の特徴: {product_features}
+
+=== セクション1：商品タイトル作成 ===
+各モールの規約に合わせ、以下の構成で3パターンずつ出力してください。
+・商品に別の呼び方（別名・代替名称）があれば、それらも適宜キーワードとして盛り込んでください。
+・関連する不具合症状（例：異音、劣化、水漏れ、故障、修理等）も適宜キーワードとして盛り込んでください。
+
+■ 楽天市場（SEOキーワード詰め込み・文字数最大型）
+・【絶対遵守】1タイトル100文字〜120文字程度。ギリギリまでキーワードを詰め込んでください。
+・入力情報にある場合に限り、[適合車種名] [型式] [純正互換番号] [関連キーワード] を盛り込むこと。
+・入力にない車種名や型式は絶対に含めないでください。
+- （タイトル案1）
+- （タイトル案2）
+- （タイトル案3）
+
+■ Yahoo!ショッピング（クリック率重視型）
+・65文字以内。
+・車種名が入力されている場合のみ、タイトルの先頭に「【車種名 + 商品名】」を配置。
+・車種名がない場合は、商品名から開始してください。
+- （タイトル案1）
+- （タイトル案2）
+- （タイトル案3）
+
+■ Amazon（規約準拠・シンプル型）
+・65文字以内、特殊記号・「送料無料」等は一切含めないこと。
+・構成は「ブランド名 + 商品名 (+ 入力があれば適合車種/主要スペック)」に限定。
+- （タイトル案1）
+- （タイトル案2）
+- （タイトル案3）
+
+=== セクション2：Yahoo!ショッピング用商品説明文 ===
+※見出しの直後に改行。
+※文章の冒頭は必ず【{product_name}】から書き始めてください。
+※全体で約300文字。
+※句点「。」ごとに必ず改行すること。行間に空白行は作らないこと。
+・商品名や関連する不具合症状（例：異音、劣化、水漏れ等）を自然な文脈で盛り込んでください。
+・商品に別の呼び方（別名・代替名称）があれば、それらも適宜使用してください。
+・関連するSEOキーワードを自然に盛り込んでください。
+
+=== セクション3：Yahoo!ショッピング用 仮想レビュー3件 ===
+※見出しの直後に改行。
+※各レビューは、内容を要約した【魅力的なタイトル】から書き始めてください。
+※タイトルのすぐ次の行から本文を書いてください。
+※全体で3件作成し、各レビューの間には「必ず1行の空白行」を入れて区切ってください。
+※句点「。」で改行し、レビューの本文内には空白行を作らないこと。
+※RAG対策：ユーザーの具体的な悩みと解決の結果を含めること。
+
+=== セクション4：想定カテゴリコード・ディレクトリ ===
+・主要モールのカテゴリパスを記載。
+
+【禁止・厳守事項】
+・記号のアスタリスク「*」は絶対に使用しないこと。
+・「社外品なので」「ポン付けできない」等のネガティブワードは禁止。
+・「絶対に直る」などの断定表現や性能保証は禁止。
+・適合確認や注意喚起の文章は不要。
 """
                 try:
                     with st.spinner("生成中..."):
@@ -505,15 +567,16 @@ def show_template_expansion():
                 st.error(f"以下のシートが見つかりません: {', '.join(missing_sheets)}")
                 return
             
-            df_master = pd.read_excel(uploaded_file, sheet_name="マスタ")
+            df_master = pd.read_excel(uploaded_file, sheet_name="マスタ").fillna('')
             if "ブランド" in df_master.columns:
                 df_master["ブランド"] = df_master["ブランド"].replace("なし", "")
                 
             df_compat = pd.read_excel(uploaded_file, sheet_name="適合車種")
             if "ヤフオクカテゴリ" in df_compat.columns:
                 df_compat["ヤフオクカテゴリ"] = df_compat["ヤフオクカテゴリ"].ffill()
+            df_compat = df_compat.fillna('')
                 
-            df_others = pd.read_excel(uploaded_file, sheet_name="その他")
+            df_others = pd.read_excel(uploaded_file, sheet_name="その他").fillna('')
             
             if df_master.empty:
                 st.error("「マスタ」シートにデータがありません。")
@@ -535,35 +598,51 @@ def show_template_expansion():
                     for idx, row in df_compat.iterrows():
                         val = row.iloc[0]
                         val_str = str(val).strip()
-                        if not val_str or val_str.lower() == "nan":
-                            continue
-                        if "/" in val_str:
-                            current_maker = val_str.split("/")[0].strip()
-                            continue
+                        if val_str.lower() == "nan":
+                            val_str = ""
+                            
                         auc_cat_val = ""
                         if auc_cat_col:
                             raw_cat = row[auc_cat_col]
                             if pd.notna(raw_cat):
                                 auc_cat_val = str(raw_cat).replace(".0", "").strip()
+                                if auc_cat_val.lower() == "nan":
+                                    auc_cat_val = ""
+                                    
+                        # 車種名もカテゴリも両方空欄ならスキップ
+                        if not val_str and not auc_cat_val:
+                            continue
+                            
+                        # メーカー行の判定
+                        if "/" in val_str:
+                            current_maker = val_str.split("/")[0].strip()
+                            continue
+                            
                         vehicles_data.append((val_str, current_maker, auc_cat_val))
                     
                     if not vehicles_data:
-                        st.warning("展開対象の車種名が見つかりませんでした。")
-                        return
+                        # 適合車種がない場合は汎用品として1件のみ登録
+                        vehicles_data = [("", "", "")]
                     
                     st.write(f"対象車種数: {len(vehicles_data)} 件")
                     
                     expanded_data = []
                     for i, (vehicle, maker, auc_cat) in enumerate(vehicles_data):
-                        seq = f"{i+1:03}"
-                        new_id = f"{base_id}-{seq}"
+                        if len(vehicles_data) == 1 and not vehicle:
+                            new_id = base_id
+                        else:
+                            seq = f"{i+1:03}"
+                            new_id = f"{base_id}-{seq}"
                         new_row = master_row.to_dict()
                         if not others_row.empty:
-                            new_row.update(others_row.to_dict())
+                            # 空文字で上書きしないように更新
+                            for k, v in others_row.to_dict().items():
+                                if v:
+                                    new_row[k] = v
                         new_row["新管理番号"] = new_id
-                        new_row["車種名"] = vehicle
-                        new_row["メーカー名"] = maker
-                        new_row["ヤフオクカテゴリ"] = auc_cat
+                        if vehicle: new_row["車種名"] = vehicle
+                        if maker: new_row["メーカー名"] = maker
+                        if auc_cat: new_row["ヤフオクカテゴリ"] = auc_cat
                         expanded_data.append(new_row)
                     
                     st.write("CSV出力用に51項目へマッピング中...")
@@ -649,16 +728,27 @@ def show_template_expansion():
 
                         # --- J列 (explanation) の構築 ---
                         mandatory_lines = []
-                        mandatory_lines.append("●商品状態")
-                        mandatory_lines.append(safe_str(data.get("商品状態")))
-                        mandatory_lines.append("●適合車種")
-                        mandatory_lines.append(f"{maker} {vehicle}")
-                        mandatory_lines.append("※上記車種にグレードや型式記載されている場合でも、年式・仕様等により適合しない場合が御座います。必ず実車に取付されている純正品番をご確認の上ご注文お願いします。")
-                        mandatory_lines.append("●純正品番")
+                        item_status = safe_str(data.get("商品状態"))
+                        if item_status:
+                            mandatory_lines.append("●商品状態")
+                            mandatory_lines.append(item_status)
+                            
+                        if maker or vehicle:
+                            mandatory_lines.append("●適合車種")
+                            mandatory_lines.append(f"{maker} {vehicle}".strip())
+                            mandatory_lines.append("※上記車種にグレードや型式記載されている場合でも、年式・仕様等により適合しない場合が御座います。必ず実車に取付されている純正品番をご確認の上ご注文お願いします。")
+                            
                         gen_no = safe_str(data.get("純正品番"))
-                        suffix = "いずれかの取付車両に限ります。" if "/" in gen_no else "の取付車両に限ります。"
-                        mandatory_lines.append(f"{gen_no}{suffix}")
-                        mandatory_lines.append("※適合にご不安がある場合、ご注文前に車体番号をご連絡頂ければ当店にてお調べ致します。")
+                        if gen_no:
+                            mandatory_lines.append("●純正品番")
+                            suffix = "いずれかの取付車両に限ります。" if "/" in gen_no else "の取付車両に限ります。"
+                            mandatory_lines.append(f"{gen_no}{suffix}")
+                            mandatory_lines.append("※適合にご不安がある場合、ご注文前に車体番号をご連絡頂ければ当店にてお調べ致します。")
+                        
+                        set_content = safe_str(data.get("セット内容"))
+                        if set_content:
+                            mandatory_lines.append("●セット内容")
+                            mandatory_lines.append(set_content)
                         
                         spec = safe_str(data.get("商品仕様"))
                         if spec:
@@ -681,10 +771,13 @@ def show_template_expansion():
                         main_content_parts = []
                         
                         # 1. 商品の状態
-                        main_content_parts.append(f"<B>●商品の状態</B><BR>{safe_str(data.get('商品状態')).replace(chr(10), '<BR>')}<BR><BR>")
+                        item_status = safe_str(data.get('商品状態'))
+                        if item_status:
+                            main_content_parts.append(f"<B>●商品の状態</B><BR>{item_status.replace(chr(10), '<BR>')}<BR><BR>")
                         
                         # 2. 適合車種
-                        main_content_parts.append(f"<B>●適合車種</B><BR>{maker}<BR>{vehicle}<BR>※上記車種にグレードや型式記載されている場合でも、年式・仕様等により適合しない場合が御座います。必ず実車に取付されている純正品番をご確認の上ご注文お願いします。<BR><BR>")
+                        if maker or vehicle:
+                            main_content_parts.append(f"<B>●適合車種</B><BR>{maker}<BR>{vehicle}<BR>※上記車種にグレードや型式記載されている場合でも、年式・仕様等により適合しない場合が御座います。必ず実車に取付されている純正品番をご確認の上ご注文お願いします。<BR><BR>")
                         
                         # 3. 商品仕様
                         if spec:
@@ -695,7 +788,13 @@ def show_template_expansion():
                             main_content_parts.append(f"<B>●商品説明</B><BR>{desc_styled.replace(chr(10), '<BR>')}<BR><BR>")
                             
                         # 5. 純正品番
-                        main_content_parts.append(f"<B>●純正品番</B><BR>{gen_no}{suffix}<BR>※適合にご不安がある場合、ご注文前に車体番号をご連絡頂ければ当店にてお調べ致します。<BR><BR>")
+                        if gen_no:
+                            main_content_parts.append(f"<B>●純正品番</B><BR>{gen_no}{suffix}<BR>※適合にご不安がある場合、ご注文前に車体番号をご連絡頂ければ当店にてお調べ致します。<BR><BR>")
+                        
+                        # 5.5 セット内容
+                        set_content = safe_str(data.get("セット内容"))
+                        if set_content:
+                            main_content_parts.append(f"<B>●セット内容</B><BR>{set_content.replace(chr(10), '<BR>')}<BR><BR>")
                         
                         # 6. ブランド説明
                         if brand and brand in BRAND_DESCRIPTIONS:
@@ -824,8 +923,12 @@ def show_template_expansion():
                         base_bcid = str(master_row.get("管理番号", "")).strip()
                         df_export.loc[i, "auc-bcid"] = base_bcid
                         
-                        # AJ列（auc-category）: ffillで取得済みのヤフオクカテゴリ
-                        df_export.loc[i, "auc-category"] = str(data.get("ヤフオクカテゴリ", "")).strip()
+                        # AJ列（auc-category）: 優先順位：適合車種 > マスタ/その他
+                        auc_cat_final = str(data.get("ヤフオクカテゴリ", "")).strip()
+                        if not auc_cat_final:
+                            # 最終バックアップ：マスタシートの値を直接確認
+                            auc_cat_final = str(master_row.get("ヤフオクカテゴリ", "")).strip()
+                        df_export.loc[i, "auc-category"] = auc_cat_final
                         
                         # AK列（auc-store-keyword）: 管理番号 メーカー名 品名 (バイト数制限付き)
                         base_part_name = title_words[0] if title_words else ""
