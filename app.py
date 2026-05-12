@@ -825,7 +825,7 @@ def show_template_expansion():
                             main_content_parts.append(OVERSIZE_HTML_BLOCK)
                         main_content_html = "".join(main_content_parts)
 
-                        # --- J列 (explanation) の構築（スマートカット版） ---
+                        # --- J列 (explanation) の構築（並び替え＆スマートカット版） ---
                         j_parts = []
                         if item_status: j_parts.append(f"●商品の状態\n{item_status}")
                         if maker or vehicle:
@@ -837,14 +837,14 @@ def show_template_expansion():
                         if gen_no: j_parts.append(f"●純正品番\n{gen_no}{suffix}\n※適合にご不安がある場合、ご注文前に車体番号をご連絡頂ければ当店にてお調べ致します。")
                         if set_content: j_parts.append(f"●セット内容\n{set_content}")
                         if brand and brand in BRAND_DESCRIPTIONS: j_parts.append(f"●ブランド\n{BRAND_DESCRIPTIONS[brand]}")
-                        j_parts.append(f"●管理番号\n{base_bcid}")
                         
                         plain_guarantee = re.sub(r'<[^>]+>', '', guarantee_block.replace('<BR>', '\n').replace('<br>', '\n')).strip()
                         plain_oversize = re.sub(r'<[^>]+>', '', OVERSIZE_HTML_BLOCK.replace('<BR>', '\n').replace('<br>', '\n')).strip() if is_oversize else ""
                         
-                        footer_parts = [plain_guarantee]
-                        if plain_oversize: footer_parts.append(plain_oversize)
-                        footer_text = "\n\n".join(footer_parts)
+                        # フッター部分（管理番号 ＋ 保証関連 ＋ 特大注意書き）
+                        footer_elements = [f"●管理番号\n{base_bcid}", plain_guarantee]
+                        if plain_oversize: footer_elements.append(plain_oversize)
+                        footer_text = "\n\n".join(footer_elements)
 
                         voc_raw = safe_str(data.get("お客様の声"))
                         if voc_raw.startswith("●お客様の声"):
@@ -858,7 +858,7 @@ def show_template_expansion():
                             current_voc = "\n\n".join(voc_list[:i_rev])
                             temp_j = j_parts.copy()
                             if current_voc:
-                                temp_j.append(f"●お客様の声\n{current_voc}")
+                                temp_j.append(f"●お客様の声\n{current_voc}") # 管理番号・保証の前に配置
                             temp_j.append(footer_text)
                             
                             candidate_exp = "\n\n".join(temp_j)
@@ -866,10 +866,10 @@ def show_template_expansion():
                                 final_exp = candidate_exp
                                 break
                         
-                        # 0件にしても500文字をオーバーする場合は末尾でカット
+                        # 0件にしても500文字をオーバーする場合は「...」なしで500文字ぴったりでカット
                         if not final_exp:
                             fallback_exp = "\n\n".join(j_parts + [footer_text])
-                            final_exp = fallback_exp[:497] + "..."
+                            final_exp = fallback_exp[:500]
                             
                         df_export.loc[i, "explanation"] = final_exp
 
