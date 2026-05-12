@@ -616,11 +616,8 @@ def show_template_expansion():
                     
                     expanded_data = []
                     for i, (vehicle, maker, auc_cat) in enumerate(vehicles_data):
-                        if len(vehicles_data) == 1 and not vehicle:
-                            new_id = base_id
-                        else:
-                            seq = f"{i+1:03}"
-                            new_id = f"{base_id}-{seq}"
+                        seq = f"{i+1:03}"
+                        new_id = f"{base_id}-{seq}"
                         new_row = master_row.to_dict()
                         if not others_row.empty:
                             # 空文字で上書きしないように更新
@@ -721,43 +718,6 @@ def show_template_expansion():
                                 return ""
                             return str(val).strip()
 
-                        # --- J列 (explanation) の構築 ---
-                        mandatory_lines = []
-                        item_status = safe_str(data.get("商品状態"))
-                        if item_status:
-                            mandatory_lines.append("●商品状態")
-                            mandatory_lines.append(item_status)
-                            
-                        if maker or vehicle:
-                            mandatory_lines.append("●適合車種")
-                            mandatory_lines.append(f"{maker} {vehicle}".strip())
-                            mandatory_lines.append("※上記車種にグレードや型式記載されている場合でも、年式・仕様等により適合しない場合が御座います。必ず実車に取付されている純正品番をご確認の上ご注文お願いします。")
-                            
-                        gen_no = safe_str(data.get("純正品番"))
-                        if gen_no:
-                            mandatory_lines.append("●純正品番")
-                            suffix = "いずれかの取付車両に限ります。" if "/" in gen_no else "の取付車両に限ります。"
-                            mandatory_lines.append(f"{gen_no}{suffix}")
-                            mandatory_lines.append("※適合にご不安がある場合、ご注文前に車体番号をご連絡頂ければ当店にてお調べ致します。")
-                        
-                        set_content = safe_str(data.get("セット内容"))
-                        if set_content:
-                            mandatory_lines.append("●セット内容")
-                            mandatory_lines.append(set_content)
-                        
-                        spec = safe_str(data.get("商品仕様"))
-                        if spec:
-                            mandatory_lines.append("●商品仕様")
-                            mandatory_lines.append(spec)
-                            
-                        desc_raw = safe_str(data.get("商品説明"))
-                        if desc_raw:
-                            mandatory_lines.append("●商品説明")
-                            desc_styled = re.sub(r'(【.+?】)', r'<B><font color="#ff0000">\1</font></B>', desc_raw)
-                            mandatory_lines.append(desc_styled)
-
-                        # J列に代入
-                        df_export.loc[i, "explanation"] = "\n".join([l for l in mandatory_lines if l])
 
                         shipping_val = safe_str(data.get("送料"))
                         is_oversize = shipping_val in ["特大A", "特大B", "特大C", "特大D"]
@@ -857,6 +817,10 @@ def show_template_expansion():
                         if is_oversize:
                             main_content_parts.append(OVERSIZE_HTML_BLOCK)
                         main_content_html = "".join(main_content_parts)
+
+                        # J列 (explanation) の構築（ボリュームアップ版）
+                        plain_exp = main_content_html.replace("<BR>", "\n").replace("<br>", "\n")
+                        df_export.loc[i, "explanation"] = re.sub(r'<[^>]+>', '', plain_exp).strip()
 
                         # ヘッダーHTMLの組み立て
                         banner_val = safe_str(data.get("バナー"))
