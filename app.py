@@ -100,10 +100,10 @@ BANNER_MAPPING = {
     "INTEX": [
         "https://shopping.c.yimg.jp/lib/solltd/INTEX-01.jpg",
         "https://shopping.c.yimg.jp/lib/solltd/INTEX-02.jpg"
-    ]
-     "水鉄砲": [
+    ],
+    "水鉄砲": [
         "https://shopping.c.yimg.jp/lib/solltd/watergun-01.jpg",
-        "https://shopping.c.yimg.jp/lib/solltd/watergun-02.jpg"
+        "https://shopping.c.yimg.jp/lib/solltd/watergun-02.jpg",
         "https://shopping.c.yimg.jp/lib/solltd/watergun-03.jpg"
     ]
 }
@@ -550,7 +550,7 @@ def show_seo_generator():
 """
                 try:
                     with st.spinner("生成中..."):
-                        model = genai.GenerativeModel("gemini-3-flash-preview")
+                        model = genai.GenerativeModel("gemini-1.5-flash")
                         response = model.generate_content(prompt)
                         result_text = response.text.replace("\n", "  \n")
                         st.subheader("2. 生成結果")
