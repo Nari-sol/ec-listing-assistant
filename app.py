@@ -550,7 +550,7 @@ def show_seo_generator():
 """
                 try:
                     with st.spinner("生成中..."):
-                        model = genai.GenerativeModel("gemini-1.5-flash")
+                        model = genai.GenerativeModel("gemini-3-flash-preview")
                         response = model.generate_content(prompt)
                         result_text = response.text.replace("\n", "  \n")
                         st.subheader("2. 生成結果")
