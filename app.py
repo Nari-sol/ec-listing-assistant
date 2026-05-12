@@ -720,7 +720,14 @@ def show_template_expansion():
                                 h_vehicle = v_parts[0]
                             res_headline = build_headline_base(h_maker, h_vehicle, h_part)
                         if get_lenb_half(res_headline) < 30.0:
-                            add_keywords = ["純正互換", "故障", "補修", "メンテナンス"]
+                            item_type_for_headline = str(data.get("種別", "")).strip()
+                            if item_type_for_headline == "用品":
+                                # 種別が用品の場合：タイトルの2単語目以降を追加キーワードの候補にする
+                                add_keywords = title_words[1:] if len(title_words) > 1 else []
+                            else:
+                                # 用品以外の場合：従来の固定キーワード
+                                add_keywords = ["純正互換", "故障", "補修", "メンテナンス"]
+                                
                             for kw in add_keywords:
                                 temp_headline = f"{res_headline} {kw}".strip()
                                 if get_lenb_half(temp_headline) <= 30.0:
