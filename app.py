@@ -96,6 +96,15 @@ BANNER_MAPPING = {
     ],
     "HELLA": [
         "https://shopping.c.yimg.jp/lib/solltd/yshella.jpg"
+    ],
+    "INTEX": [
+        "https://shopping.c.yimg.jp/lib/solltd/INTEX-01.jpg",
+        "https://shopping.c.yimg.jp/lib/solltd/INTEX-02.jpg"
+    ]
+     "水鉄砲": [
+        "https://shopping.c.yimg.jp/lib/solltd/watergun-01.jpg",
+        "https://shopping.c.yimg.jp/lib/solltd/watergun-02.jpg"
+        "https://shopping.c.yimg.jp/lib/solltd/watergun-03.jpg"
     ]
 }
 
@@ -872,6 +881,10 @@ def show_template_expansion():
                             for b_url in BANNER_MAPPING[banner_val]:
                                 add1_banner_html += f'<IMG SRC="{b_url}"><BR><BR>'
                                 sp_banner_html += f'<IMG SRC="{b_url}" style="width: 100%;"><BR><BR>'
+                            
+                            if banner_val == "INTEX":
+                                add1_banner_html += '<A HREF="https://store.shopping.yahoo.co.jp/solltd/search.html?p=intex#CentSrchFilter1" TARGET="new"><IMG SRC="https://shopping.c.yimg.jp/lib/solltd/INTEX-03.jpg"></a><BR><BR>'
+                                sp_banner_html += '<A HREF="https://store.shopping.yahoo.co.jp/solltd/search.html?p=intex#CentSrchFilter1" TARGET="new"><IMG SRC="https://shopping.c.yimg.jp/lib/solltd/INTEX-03.jpg" style="width: 100%;"></a><BR><BR>'
 
                         # ベース画像の選択
                         base_img_file = "hapadparts01.jpg" if banner_val in ["HAPAD パッド", "HAPAD ローター", "プレミアムHAPAD パッド"] else "parts01.gif"
