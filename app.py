@@ -722,6 +722,13 @@ def show_template_expansion():
                         shipping_val = safe_str(data.get("送料"))
                         is_oversize = shipping_val in ["特大A", "特大B", "特大C", "特大D"]
 
+                        # 変数の再定義（J列処理削除による欠落の復旧）
+                        spec = safe_str(data.get("商品仕様"))
+                        desc_raw = safe_str(data.get("商品説明"))
+                        desc_styled = re.sub(r'(【.+?】)', r'<B><font color="#ff0000">\1</font></B>', desc_raw) if desc_raw else ""
+                        gen_no = safe_str(data.get("純正品番"))
+                        suffix = "いずれかの取付車両に限ります。" if "/" in gen_no else "の取付車両に限ります。"
+
                         # --- K列 (additional1) と AC列 (sp-additional) のコンテンツ構築 ---
                         main_content_parts = []
                         
