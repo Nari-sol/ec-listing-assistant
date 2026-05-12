@@ -825,9 +825,53 @@ def show_template_expansion():
                             main_content_parts.append(OVERSIZE_HTML_BLOCK)
                         main_content_html = "".join(main_content_parts)
 
-                        # J列 (explanation) の構築（ボリュームアップ版）
-                        plain_exp = main_content_html.replace("<BR>", "\n").replace("<br>", "\n")
-                        df_export.loc[i, "explanation"] = re.sub(r'<[^>]+>', '', plain_exp).strip()
+                        # --- J列 (explanation) の構築（スマートカット版） ---
+                        j_parts = []
+                        if item_status: j_parts.append(f"●商品の状態\n{item_status}")
+                        if maker or vehicle:
+                            v_lines = [x for x in [maker, vehicle] if x]
+                            v_lines.append("※上記車種にグレードや型式記載されている場合でも、年式・仕様等により適合しない場合が御座います。必ず実車に取付されている純正品番をご確認の上ご注文お願いします。")
+                            j_parts.append("●適合車種\n" + "\n".join(v_lines))
+                        if spec: j_parts.append(f"●商品仕様\n{spec}")
+                        if desc_raw: j_parts.append(f"●商品説明\n{desc_raw}")
+                        if gen_no: j_parts.append(f"●純正品番\n{gen_no}{suffix}\n※適合にご不安がある場合、ご注文前に車体番号をご連絡頂ければ当店にてお調べ致します。")
+                        if set_content: j_parts.append(f"●セット内容\n{set_content}")
+                        if brand and brand in BRAND_DESCRIPTIONS: j_parts.append(f"●ブランド\n{BRAND_DESCRIPTIONS[brand]}")
+                        j_parts.append(f"●管理番号\n{base_bcid}")
+                        
+                        plain_guarantee = re.sub(r'<[^>]+>', '', guarantee_block.replace('<BR>', '\n').replace('<br>', '\n')).strip()
+                        plain_oversize = re.sub(r'<[^>]+>', '', OVERSIZE_HTML_BLOCK.replace('<BR>', '\n').replace('<br>', '\n')).strip() if is_oversize else ""
+                        
+                        footer_parts = [plain_guarantee]
+                        if plain_oversize: footer_parts.append(plain_oversize)
+                        footer_text = "\n\n".join(footer_parts)
+
+                        voc_raw = safe_str(data.get("お客様の声"))
+                        if voc_raw.startswith("●お客様の声"):
+                            voc_raw = re.sub(r'^●お客様の声\s*', '', voc_raw)
+                        # レビューを空行（改行2つ以上）でブロックごとに分割
+                        voc_list = [r.strip() for r in re.split(r'\n\s*\n', voc_raw) if r.strip()] if voc_raw else []
+                        
+                        final_exp = ""
+                        # レビューを全件から順に1件ずつ減らして文字数をテスト
+                        for i_rev in range(len(voc_list), -1, -1):
+                            current_voc = "\n\n".join(voc_list[:i_rev])
+                            temp_j = j_parts.copy()
+                            if current_voc:
+                                temp_j.append(f"●お客様の声\n{current_voc}")
+                            temp_j.append(footer_text)
+                            
+                            candidate_exp = "\n\n".join(temp_j)
+                            if len(candidate_exp) <= 500:
+                                final_exp = candidate_exp
+                                break
+                        
+                        # 0件にしても500文字をオーバーする場合は末尾でカット
+                        if not final_exp:
+                            fallback_exp = "\n\n".join(j_parts + [footer_text])
+                            final_exp = fallback_exp[:497] + "..."
+                            
+                        df_export.loc[i, "explanation"] = final_exp
 
                         # ヘッダーHTMLの組み立て
                         banner_val = safe_str(data.get("バナー"))
