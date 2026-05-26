@@ -106,6 +106,11 @@ BANNER_MAPPING = {
         "https://shopping.c.yimg.jp/lib/solltd/watergun-02.jpg",
         "https://shopping.c.yimg.jp/lib/solltd/watergun-03.jpg"
     ]
+    "CAPSOL NOXセンサー": [
+        "https://shopping.c.yimg.jp/lib/solltd/str_ignition_coil1.jpg",
+        "https://shopping.c.yimg.jp/lib/solltd/NOX1.jpg",
+    ]
+
 }
 
 # 特大商品専用HTMLブロック
