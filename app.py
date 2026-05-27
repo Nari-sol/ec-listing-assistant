@@ -812,60 +812,129 @@ def show_template_expansion():
                                 '商品交換時に発生する費用および損害等は保証できませんのでご了承下さい。<BR>'
                                 '保証申請時には商品の不良申請書または診断結果および診断書【コピーでも可】・お車の車検証をご提出いただく必要がございます。<BR>'
                                 'また症状や状態によっては商品の状態の確認がとれるお写真をいただく場合もございます。<BR>'
-                                '取付ミスによる不具合や破損、加工済は保証対象外となります。<br>'
-                                '当社では初期不良、商品保証期間で対応が異なります。<br>'
-                                '<b><a href="https://store.shopping.yahoo.co.jp/solltd/solpage01.html" target="new">コチラ</a></b>をご一読ください。<br>'
+                                '取付ミスによる不具合や破損、加工済は保証対象外となります。<br><br>'
                             )
                         else:
                             guarantee_block = (
                                 '<B>●保証期間</B><BR>商品到着後6ヶ月間の商品保証を致します。<BR>'
                                 'この商品の初期不良期間は商品到着後14日間です。<br>'
                                 '当店側のミスでお手元に届いた商品が違った場合は、商品到着後14日間以内での対応となりますので、速やかな商品確認をお願い致します。<br><br>'
-                                '<b>●保証について</b><br>保証内容はご購入頂いた商品のみとなります。<br>'
-                                '当社では初期不良、商品保証期間で対応が異なります。<br>'
-                                '<b><a href="https://store.shopping.yahoo.co.jp/solltd/solpage01.html" target="new">コチラ</a></b>をご一読ください。<br>'
                             )
                         main_content_parts.append(guarantee_block)
                         if is_oversize:
                             main_content_parts.append(OVERSIZE_HTML_BLOCK)
                         main_content_html = "".join(main_content_parts)
 
-                        # --- J列 (explanation) の構築（構成最適化＆スマートカット版） ---
-                        j_parts = []
-                        if item_status: j_parts.append(f"●商品の状態\n{item_status}")
-                        if maker or vehicle:
-                            v_lines = [x for x in [maker, vehicle] if x]
+                        # --- J列 (explanation) の構築（完全最適化＆スマートカット版） ---
+                        status_block = f"●商品の状態\n{item_status}" if item_status else ""
+                        
+                        valid_maker = maker if maker.lower() not in ["nan", "none", ""] else ""
+                        valid_vehicle = vehicle if vehicle.lower() not in ["nan", "none", ""] else ""
+                        compat_block = ""
+                        if valid_maker or valid_vehicle:
+                            v_lines = [x for x in [valid_maker, valid_vehicle] if x]
                             v_lines.append("※上記車種にグレードや型式記載されている場合でも、年式・仕様等により適合しない場合が御座います。必ず実車に取付されている純正品番をご確認の上ご注文お願いします。")
-                            j_parts.append("●適合車種\n" + "\n".join(v_lines))
-                        if spec: j_parts.append(f"●商品仕様\n{spec}")
-                        if desc_raw: j_parts.append(f"●商品説明\n{desc_raw}")
-                        if gen_no: j_parts.append(f"●純正品番\n{gen_no}{suffix}\n※適合にご不安がある場合、ご注文前に車体番号をご連絡頂ければ当店にてお調べ致します。")
-                        if set_content: j_parts.append(f"●セット内容\n{set_content}")
-                        if brand and brand in BRAND_DESCRIPTIONS: j_parts.append(f"●ブランド\n{BRAND_DESCRIPTIONS[brand]}")
-
+                            compat_block = "●適合車種\n" + "\n".join(v_lines)
+                            
+                        spec_block = f"●商品仕様\n{spec}" if spec else ""
+                        
+                        desc_header = ""
+                        desc_body_lines = []
+                        if desc_raw:
+                            desc_lines = [line.strip() for line in desc_raw.strip().split("\n") if line.strip()]
+                            if desc_lines:
+                                desc_header = f"●商品説明\n{desc_lines[0]}"
+                                desc_body_lines = desc_lines[1:]
+                                
+                        is_fit_check_impossible = str(data.get("適合確認可否", "")).strip() == "不可"
+                        fit_check_notes = "※こちらの商品は当社側で適合確認ができないメーカーの為、メーカー品番又は純正品番のご確認をお願い致します。" if is_fit_check_impossible else "※適合にご不安がある場合、ご注文前に車体番号をご連絡頂ければ当店にてお調べ致します。"
+                        genuine_block = f"●純正品番\n{gen_no}{suffix}\n{fit_check_notes}" if gen_no else ""
+                        
+                        set_block = f"●セット内容\n{set_content}" if set_content else ""
+                        brand_block = f"●ブランド\n{BRAND_DESCRIPTIONS[brand]}" if (brand and brand in BRAND_DESCRIPTIONS) else ""
+                        
                         voc_raw = safe_str(data.get("お客様の声"))
                         if voc_raw.startswith("●お客様の声"):
                             voc_raw = re.sub(r'^●お客様の声\s*', '', voc_raw)
-                        # レビューを空行（改行2つ以上）でブロックごとに分割
                         voc_list = [r.strip() for r in re.split(r'\n\s*\n', voc_raw) if r.strip()] if voc_raw else []
-                        
-                        final_exp = ""
-                        # レビューを全件から順に1件ずつ減らして文字数をテスト
-                        for i_rev in range(len(voc_list), -1, -1):
-                            current_voc = "\n\n".join(voc_list[:i_rev])
-                            temp_j = j_parts.copy()
-                            if current_voc:
-                                temp_j.append(f"●お客様の声\n{current_voc}")
+
+                        def get_sjis_bytes(text):
+                            plain = re.sub(r'<[^>]+>', '', text)
+                            return len(plain.encode('cp932', errors='ignore'))
                             
-                            candidate_exp = "\n\n".join(temp_j)
-                            if len(candidate_exp) <= 500:
-                                final_exp = candidate_exp
-                                break
+                        def build_candidate(voc_to_use, desc_body_to_use, use_empty_lines=True, include_optional=True):
+                            all_blocks = []
+                            if status_block: all_blocks.append(status_block)
+                            if compat_block: all_blocks.append(compat_block)
+                            
+                            if include_optional:
+                                if spec_block: all_blocks.append(spec_block)
+                                desc_block = ""
+                                if desc_header:
+                                    if desc_body_to_use:
+                                        desc_block = desc_header + "\n" + "\n".join(desc_body_to_use)
+                                    else:
+                                        desc_block = desc_header
+                                if desc_block: all_blocks.append(desc_block)
+                                
+                            if genuine_block: all_blocks.append(genuine_block)
+                            if set_block: all_blocks.append(set_block)
+                            
+                            if include_optional:
+                                if brand_block: all_blocks.append(brand_block)
+                                voc_block = ""
+                                if voc_to_use:
+                                    voc_block = "●お客様の声\n" + "\n\n".join(voc_to_use)
+                                if voc_block: all_blocks.append(voc_block)
+                                
+                            join_sep = "\n\n" if use_empty_lines else "\n"
+                            res = join_sep.join(all_blocks)
+                            if not use_empty_lines:
+                                lines = [line.strip() for line in res.split("\n") if line.strip()]
+                                res = "\n".join(lines)
+                            return res
+
+                        final_exp = ""
                         
-                        # レビューを0件にしても500文字をオーバーする場合は、500文字ぴったりでカット（...なし）
+                        # --- 通常状態 (ステップ0) ---
+                        candidate = build_candidate(voc_list, desc_body_lines, use_empty_lines=True, include_optional=True)
+                        if get_sjis_bytes(candidate) <= 1000:
+                            final_exp = candidate
+                            
+                        # --- ステップ1: 空白行の削除 ---
                         if not final_exp:
-                            fallback_exp = "\n\n".join(j_parts)
-                            final_exp = fallback_exp[:500]
+                            candidate = build_candidate(voc_list, desc_body_lines, use_empty_lines=False, include_optional=True)
+                            if get_sjis_bytes(candidate) <= 1000:
+                                final_exp = candidate
+                                
+                        # --- ステップ2: お客様の声の下からブロック単位削除 ---
+                        if not final_exp:
+                            for i_voc in range(len(voc_list) - 1, -1, -1):
+                                candidate = build_candidate(voc_list[:i_voc], desc_body_lines, use_empty_lines=False, include_optional=True)
+                                if get_sjis_bytes(candidate) <= 1000:
+                                    final_exp = candidate
+                                    break
+                                    
+                        # --- ステップ3: 商品説明の下から1行ずつ削除 ---
+                        if not final_exp:
+                            for j_line in range(len(desc_body_lines) - 1, -1, -1):
+                                candidate = build_candidate([], desc_body_lines[:j_line], use_empty_lines=False, include_optional=True)
+                                if get_sjis_bytes(candidate) <= 1000:
+                                    final_exp = candidate
+                                    break
+                                    
+                        # --- ステップ4: 優先度の低いブロックの丸ごと削除 (必須ブロックのみ残す) ---
+                        if not final_exp:
+                            candidate = build_candidate([], [], use_empty_lines=False, include_optional=False)
+                            if get_sjis_bytes(candidate) <= 1000:
+                                final_exp = candidate
+                                
+                        # --- ステップ5: 最終命綱 (必須ブロックの強制カット) ---
+                        if not final_exp:
+                            candidate = build_candidate([], [], use_empty_lines=False, include_optional=False)
+                            while get_sjis_bytes(candidate) > 1000:
+                                candidate = candidate[:-1]
+                            final_exp = candidate
                             
                         df_export.loc[i, "explanation"] = final_exp
 
