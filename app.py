@@ -534,6 +534,11 @@ def show_seo_generator():
 === セクション4：想定カテゴリコード・ディレクトリ ===
 ・主要モールのカテゴリパスを記載。
 
+=== セクション5：部品の属する部位・カテゴリ ===
+・入力された商品名から、その商品が自動車やバイクのどの部位に属するか（例：冷却系、エンジン周り、足回り、電装系、内装、外装など）を推測して簡潔に表示してください。
+・表示例：ウォーターポンプの場合 → 【冷却系、エンジン周り】
+・商品種別で「その他雑貨（日用品・レジャー等）」が選ばれている場合は、その商品の一般的なカテゴリ（例：夏用レジャー用品、生活家電など）を表示してください。
+
 【禁止・厳守事項】
 ・記号のアスタリスク「*」は絶対に使用しないこと。
 ・「社外品なので」「ポン付けできない」等のネガティブワードは禁止。
@@ -671,23 +676,39 @@ def show_template_expansion():
                         genuine = genuine_raw.split("/")[0].strip()
                         fixed_phrase = "18時まで即日発送"
                         
-                        def build_name(include_fixed):
-                            parts = []
-                            if brand: parts.append(brand)
-                            if maker: parts.append(maker)
-                            if vehicle: parts.append(vehicle)
-                            parts.extend(title_words)
-                            if genuine: parts.append(genuine)
-                            if include_fixed: parts.append(fixed_phrase)
-                            return " ".join(parts)
+                        base_parts = []
+                        if brand: base_parts.append(brand)
+                        if maker: base_parts.append(maker)
+                        if vehicle: base_parts.append(vehicle)
 
-                        res_name = build_name(True)
-                        if len(res_name) > 65:
-                            res_name = build_name(False)
-                        while len(res_name) > 65 and title_words:
-                            title_words.pop()
-                            res_name = build_name(False)
-                        df_export.loc[i, "name"] = res_name[:65]
+                        current_parts = base_parts.copy()
+                        
+                        # タイトルの単語を前から順に足し算テスト
+                        for word in title_words:
+                            test_parts = current_parts + [word]
+                            # genuineを含めた状態での文字数をテスト（全角換算）
+                            test_full = test_parts.copy()
+                            if genuine: test_full.append(genuine)
+                            if get_lenb_half(" ".join(test_full)) <= 65.0:
+                                current_parts.append(word)
+                            else:
+                                break
+                                
+                        if genuine:
+                            current_parts.append(genuine)
+                            
+                        # 最後に fixed_phrase (18時まで即日発送) の足し算テスト
+                        test_with_fixed = current_parts + [fixed_phrase]
+                        if get_lenb_half(" ".join(test_with_fixed)) <= 65.0:
+                            current_parts.append(fixed_phrase)
+                            
+                        final_name = " ".join(current_parts)
+                        
+                        # 安全装置：万が一オーバーする場合は末尾からカット
+                        while get_lenb_half(final_name) > 65.0:
+                            final_name = final_name[:-1]
+                            
+                        df_export.loc[i, "name"] = final_name.strip()
                         
                         h_maker = maker
                         h_vehicle = vehicle
