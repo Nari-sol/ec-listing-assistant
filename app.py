@@ -603,53 +603,51 @@ def show_template_expansion():
                     
                     st.write("適合車種をフィルタリング中...")
                     vehicles_data = []
-                    current_maker = ""
+                    current_maker_full = ""
+                    current_maker_short = ""
                     auc_cat_col = "ヤフオクカテゴリ" if "ヤフオクカテゴリ" in df_compat.columns else None
-                    
+
                     for idx, row in df_compat.iterrows():
                         val = row.iloc[0]
                         val_str = str(val).strip()
-                        if val_str.lower() == "nan":
-                            val_str = ""
+                        if val_str.lower() == "nan": val_str = ""
                             
                         auc_cat_val = ""
                         if auc_cat_col:
                             raw_cat = row[auc_cat_col]
                             if pd.notna(raw_cat):
                                 auc_cat_val = str(raw_cat).replace(".0", "").strip()
-                                if auc_cat_val.lower() == "nan":
-                                    auc_cat_val = ""
+                                if auc_cat_val.lower() == "nan": auc_cat_val = ""
                                     
-                        # 車種名もカテゴリも両方空欄ならスキップ
                         if not val_str and not auc_cat_val:
                             continue
                             
-                        # メーカー行の判定
-                        if "/" in val_str:
-                            current_maker = val_str.split("/")[0].strip()
+                        # メーカー行の判定（"/"が含まれるか、辞書に存在するか）
+                        check_maker = val_str.split("/")[0].strip()
+                        if "/" in val_str or check_maker in BRAND_CODE_MAPPING:
+                            current_maker_full = val_str
+                            current_maker_short = check_maker
                             continue
                             
-                        vehicles_data.append((val_str, current_maker, auc_cat_val))
+                        vehicles_data.append((val_str, current_maker_full, current_maker_short, auc_cat_val))
                     
                     if not vehicles_data:
-                        # 適合車種がない場合は汎用品として1件のみ登録
-                        vehicles_data = [("", "", "")]
+                        vehicles_data = [("", "", "", "")]
                     
                     st.write(f"対象車種数: {len(vehicles_data)} 件")
                     
                     expanded_data = []
-                    for i, (vehicle, maker, auc_cat) in enumerate(vehicles_data):
+                    for i, (vehicle, maker_full, maker_short, auc_cat) in enumerate(vehicles_data):
                         seq = f"{i+1:03}"
                         new_id = f"{base_id}-{seq}"
                         new_row = master_row.to_dict()
                         if not others_row.empty:
-                            # 空文字で上書きしないように更新
                             for k, v in others_row.to_dict().items():
-                                if v:
-                                    new_row[k] = v
+                                if v: new_row[k] = v
                         new_row["新管理番号"] = new_id
                         if vehicle: new_row["車種名"] = vehicle
-                        if maker: new_row["メーカー名"] = maker
+                        if maker_short: new_row["メーカー名"] = maker_short
+                        if maker_full: new_row["メーカー名_フル"] = maker_full
                         if auc_cat: new_row["ヤフオクカテゴリ"] = auc_cat
                         expanded_data.append(new_row)
                     
@@ -674,6 +672,7 @@ def show_template_expansion():
                         brand = str(data.get("ブランド", "")).strip()
                         if brand == "社外品": brand = ""
                         maker = str(data.get("メーカー名", "")).strip()
+                        maker_full = str(data.get("メーカー名_フル", maker)).strip()
                         vehicle = str(data.get("車種名", "")).strip()
                         title_str = str(data.get("タイトル", "")).strip()
                         title_words = title_str.split()
@@ -777,8 +776,8 @@ def show_template_expansion():
                             main_content_parts.append(f"<B>●商品の状態</B><BR>{item_status.replace(chr(10), '<BR>')}<BR><BR>")
                         
                         # 2. 適合車種
-                        if maker or vehicle:
-                            main_content_parts.append(f"<B>●適合車種</B><BR>{maker}<BR>{vehicle}<BR>※上記車種にグレードや型式記載されている場合でも、年式・仕様等により適合しない場合が御座います。必ず実車に取付されている純正品番をご確認の上ご注文お願いします。<BR><BR>")
+                        if maker_full or vehicle:
+                            main_content_parts.append(f"<B>●適合車種</B><BR>{maker_full}<BR>{vehicle}<BR>※上記車種にグレードや型式記載されている場合でも、年式・仕様等により適合しない場合が御座います。必ず実車に取付されている純正品番をご確認の上ご注文お願いします。<BR><BR>")
                         
                         # 3. 商品仕様
                         if spec:
@@ -862,7 +861,7 @@ def show_template_expansion():
                         # --- J列 (explanation) の構築（完全最適化＆スマートカット版） ---
                         status_block = f"●商品の状態\n{item_status}" if item_status else ""
                         
-                        valid_maker = maker if maker.lower() not in ["nan", "none", ""] else ""
+                        valid_maker = maker_full if maker_full.lower() not in ["nan", "none", ""] else ""
                         valid_vehicle = vehicle if vehicle.lower() not in ["nan", "none", ""] else ""
                         compat_block = ""
                         if valid_maker or valid_vehicle:
