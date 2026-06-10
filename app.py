@@ -463,6 +463,7 @@ def show_seo_generator():
         )
         product_name = st.text_input("商品名", placeholder="例：ラジエーター")
         product_features = st.text_area("商品の特徴", placeholder="例：オリジナルブランド、純正互換、ハイクオリティ、1年保証付など")
+        char_count = st.number_input("生成する文字数（目安）", min_value=100, max_value=5000, value=300, step=100)
         
         if st.button("一括生成", type="primary"):
             if not product_name:
@@ -521,7 +522,7 @@ def show_seo_generator():
 === セクション2：Yahoo!ショッピング用商品説明文 ===
 ※見出しの直後に改行。
 ※文章の冒頭は必ず【{product_name}】から書き始めてください。
-※全体で約300文字。
+※全体で約{char_count}文字。
 ※句点「。」ごとに必ず改行すること。行間に空白行は作らないこと。
 {s2_repair_instr}
 ・商品に別の呼び方（別名・代替名称）があれば、それらも適宜使用してください。
