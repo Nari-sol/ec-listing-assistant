@@ -118,6 +118,11 @@ BANNER_MAPPING = {
         "https://shopping.c.yimg.jp/lib/solltd/prmrotor.jpg",
         
     ],
+    "CAPSOL ACコンプレッサー": [
+        "https://shopping.c.yimg.jp/lib/solltd/str_ignition_coil1.jpg",
+        "https://shopping.c.yimg.jp/lib/solltd/CAPSOLACCO2.jpg",
+        "https://shopping.c.yimg.jp/lib/solltd/CAPSOLACCO3.jpg",
+    ],
     "CAPSOL NOXセンサー": [
         "https://shopping.c.yimg.jp/lib/solltd/str_ignition_coil1.jpg",
         "https://shopping.c.yimg.jp/lib/solltd/NOX1.jpg",
@@ -1052,9 +1057,10 @@ def show_template_expansion():
                             df_export.loc[i, "auc-store-keyword"] = f"{base_bcid} {base_part_name}".strip()
                         
                         # AY列（item-image-urls）: ブランドごとの画像URL割り当て
+                        orig_brand = str(data.get("ブランド", "")).strip()
                         if banner_val == "プレミアムHAPAD パッド":
                             base_urls = ";;;;;;https://shopping.c.yimg.jp/lib/solltd/sub_prhapadA.jpg;https://shopping.c.yimg.jp/lib/solltd/sub_prhapadB.jpg;https://shopping.c.yimg.jp/lib/solltd/sub_prhapadC.jpg;https://shopping.c.yimg.jp/lib/solltd/notes2.jpg;;;;;;https://shopping.c.yimg.jp/lib/solltd/notesiso.jpg;;;;;https://shopping.c.yimg.jp/lib/solltd/ys1_kanban_1200.jpg"
-                        elif brand in ["HAPAD", "CAPSOL", "社外品"]:
+                        elif orig_brand in ["HAPAD", "CAPSOL", "社外品"]:
                             base_urls = ";;;;;;;;;https://shopping.c.yimg.jp/lib/solltd/notes2.jpg;;;;;;https://shopping.c.yimg.jp/lib/solltd/notesiso.jpg;;;;;https://shopping.c.yimg.jp/lib/solltd/ys1_kanban_1200.jpg"
                         else:
                             base_urls = ";;;;;;;;;https://shopping.c.yimg.jp/lib/solltd/notes2.jpg;;;;;;;;;;;https://shopping.c.yimg.jp/lib/solltd/ys1_kanban_1200.jpg"
