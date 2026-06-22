@@ -74,10 +74,7 @@ BANNER_MAPPING = {
         "https://shopping.c.yimg.jp/lib/solltd/CAPSNOW3.jpg"
     ],
     "CAPSOL ラジエーター": [
-        "https://shopping.c.yimg.jp/lib/solltd/str_ignition_coil1.jpg",
-        "https://shopping.c.yimg.jp/lib/solltd/CAPSOLRA1.jpg",
-        "https://shopping.c.yimg.jp/lib/solltd/CAPSOLRA2.jpg",
-        "https://shopping.c.yimg.jp/lib/solltd/CAPSOLRA3.jpg"
+        "https://shopping.c.yimg.jp/lib/solltd/capsol_raji1.jpg"
     ],
     "CAPSOL 強化コイル": [
         "https://shopping.c.yimg.jp/lib/solltd/str_ignition_coil1.jpg",
