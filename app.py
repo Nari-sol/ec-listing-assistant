@@ -997,11 +997,17 @@ def show_template_expansion():
                         sp_header = f'<IMG SRC="https://shopping.c.yimg.jp/lib/solltd/960.jpg" style="width: 100%;"><BR><BR><IMG SRC="https://shopping.c.yimg.jp/lib/solltd/{base_img_file}" style="width: 100%;"><BR><BR>{sp_banner_html}<B>【商品詳細】<BR></B>'
                         df_export.loc[i, "sp-additional"] = sp_header + sp_main_content
 
+                        # additional2 の共通ブロックを定義
+                        guarantee_link_block = '<div style="border: 3px solid #ff9933; border-radius:5px; padding:10px;"><p><b>保証について</b><br>保証内容はご購入頂いた商品のみとなります。<br>当社では初期不良、商品保証期間で対応が異なります。<br><span style="color:red"><b><a href="https://store.shopping.yahoo.co.jp/solltd/solpage01.html" target="new">コチラ</a></b>をご一読ください。</span></p></div><br>'
+
                         # HAPADパッド専用の追加リンク処理
                         if banner_val == "HAPAD パッド":
                             df_export.loc[i, "additional3"] = '<A HREF="https://store.shopping.yahoo.co.jp/solltd/grease-001.html" TARGET="new"><IMG SRC="https://shopping.c.yimg.jp/lib/solltd/to_grease.jpg"></a>'
                             df_export.loc[i, "sp-additional"] = str(df_export.loc[i, "sp-additional"]) + '<A HREF="https://store.shopping.yahoo.co.jp/solltd/grease-001.html" TARGET="new"><IMG SRC="https://shopping.c.yimg.jp/lib/solltd/to_grease.jpg" style="width: 100%;"><BR></A><br><br>'
-                        df_export.loc[i, "additional2"] = '<div style="border: 3px solid #ff9933; border-radius:5px; padding:10px;"><p><b>保証について</b><br>保証内容はご購入頂いた商品のみとなります。<br>当社では初期不良、商品保証期間で対応が異なります。<br><span style="color:red"><b><a href="https://store.shopping.yahoo.co.jp/solltd/solpage01.html" target="new">コチラ</a></b>をご一読ください。</span></p></div><br>'
+                        
+                        # additional2 と sp-additional の末尾に保証リンクを追加
+                        df_export.loc[i, "additional2"] = guarantee_link_block
+                        df_export.loc[i, "sp-additional"] = str(df_export.loc[i, "sp-additional"]) + guarantee_link_block
                         
                         shipping_map = {"770": 0, "1100": 100, "1650": 1, "3850": 1000, "特大A": 5000, "特大B": 50000, "特大C": 10000, "特大D": 1000000}
                         df_export.loc[i, "ship-weight"] = shipping_map.get(shipping_val, "")
