@@ -120,6 +120,11 @@ BANNER_MAPPING = {
         "https://shopping.c.yimg.jp/lib/solltd/CAPSOLACCO2.jpg",
         "https://shopping.c.yimg.jp/lib/solltd/CAPSOLACCO3.jpg",
     ],
+    "CAPSOL O2センサー": [
+        "https://shopping.c.yimg.jp/lib/solltd/str_ignition_coil1.jpg",
+        "https://shopping.c.yimg.jp/lib/solltd/CAP_O2_sensor2.jpg",
+        "https://shopping.c.yimg.jp/lib/solltd/CAP_O2_sensor3.jpg",
+    ],
     "CAPSOL NOXセンサー": [
         "https://shopping.c.yimg.jp/lib/solltd/str_ignition_coil1.jpg",
         "https://shopping.c.yimg.jp/lib/solltd/NOX1.jpg",
