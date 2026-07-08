@@ -684,7 +684,14 @@ def show_template_expansion():
                         title_str = str(data.get("タイトル", "")).strip()
                         title_words = title_str.split()
                         genuine_raw = str(data.get("純正品番", "")).strip()
-                        genuine = genuine_raw.split("/")[0].strip()
+                        genuine = ""
+                        if genuine_raw:
+                            first_line = genuine_raw.split('\n')[0].strip()
+                            if "：" in first_line:
+                                first_line = first_line.split("：", 1)[1]
+                            elif ":" in first_line:
+                                first_line = first_line.split(":", 1)[1]
+                            genuine = first_line.split("/")[0].strip()
                         fixed_phrase = "18時まで即日発送"
                         
                         base_parts = []
@@ -771,8 +778,18 @@ def show_template_expansion():
                         spec = safe_str(data.get("商品仕様"))
                         desc_raw = safe_str(data.get("商品説明"))
                         desc_styled = re.sub(r'(【.+?】)', r'<B><font color="#ff0000">\1</font></B>', desc_raw) if desc_raw else ""
-                        gen_no = safe_str(data.get("純正品番"))
-                        suffix = "いずれかの取付車両に限ります。" if "/" in gen_no else "の取付車両に限ります。"
+                        gen_no_raw = safe_str(data.get("純正品番"))
+                        gen_html_lines = []
+                        gen_text_lines = []
+                        if gen_no_raw:
+                            for line in gen_no_raw.split('\n'):
+                                line = line.strip()
+                                if not line: continue
+                                line_suffix = "いずれかの取付車両に限ります。" if "/" in line else "の取付車両に限ります。"
+                                gen_html_lines.append(f"{line}{line_suffix}")
+                                gen_text_lines.append(f"{line}{line_suffix}")
+                        gen_html_str = "<BR>".join(gen_html_lines)
+                        gen_text_str = "\n".join(gen_text_lines)
 
                         # --- K列 (additional1) と AC列 (sp-additional) のコンテンツ構築 ---
                         main_content_parts = []
@@ -795,8 +812,8 @@ def show_template_expansion():
                             main_content_parts.append(f"<B>●商品説明</B><BR>{desc_styled.replace(chr(10), '<BR>')}<BR><BR>")
                             
                         # 5. 純正品番
-                        if gen_no:
-                            main_content_parts.append(f"<B>●純正品番</B><BR>{gen_no}{suffix}<BR>※適合にご不安がある場合、ご注文前に車体番号をご連絡頂ければ当店にてお調べ致します。<BR><BR>")
+                        if gen_html_str:
+                            main_content_parts.append(f"<B>●純正品番</B><BR>{gen_html_str}<BR>※適合にご不安がある場合、ご注文前に車体番号をご連絡頂ければ当店にてお調べ致します。<BR><BR>")
                         
                         # 5.5 セット内容
                         set_content = safe_str(data.get("セット内容"))
@@ -804,10 +821,31 @@ def show_template_expansion():
                             main_content_parts.append(f"<B>●セット内容</B><BR>{set_content.replace(chr(10), '<BR>')}<BR><BR>")
                         
                         # 6. ブランド説明
+                        def get_brand_color(b_name):
+                            if "プレミアムHAPAD" in b_name or "PREMIUM HAPAD" in b_name:
+                                return "#800080"
+                            elif "HAPAD" in b_name or "CAPSOL" in b_name:
+                                return "#ff0000"
+                            else:
+                                return "#0000ff"
+
+                        brand_html_parts = []
                         if brand and brand in BRAND_DESCRIPTIONS:
+                            c1 = get_brand_color(brand)
                             brand_desc_styled = BRAND_DESCRIPTIONS[brand].replace("\n", "<BR>")
-                            brand_desc_styled = re.sub(r'(【.+?】)', r'<B><font color="#ff0000">\1</font></B>', brand_desc_styled)
-                            main_content_parts.append(f"<B>●ブランド</B><BR>{brand_desc_styled}<BR><BR>")
+                            brand_desc_styled = re.sub(r'(【.+?】)', r'<B><font color="' + c1 + r'">\1</font></B>', brand_desc_styled)
+                            brand_html_parts.append(brand_desc_styled)
+                        
+                        brand2 = str(data.get("ブランド2", "")).strip()
+                        if brand2 and brand2 in BRAND_DESCRIPTIONS:
+                            c2 = get_brand_color(brand2)
+                            brand2_desc_styled = BRAND_DESCRIPTIONS[brand2].replace("\n", "<BR>")
+                            brand2_desc_styled = re.sub(r'(【.+?】)', r'<B><font color="' + c2 + r'">\1</font></B>', brand2_desc_styled)
+                            brand_html_parts.append(brand2_desc_styled)
+                            
+                        if brand_html_parts:
+                            combined_brand_html = "<BR><BR>".join(brand_html_parts)
+                            main_content_parts.append(f"<B>●ブランド</B><BR>{combined_brand_html}<BR><BR>")
                             
                         # 7. 管理番号
                         base_bcid = str(master_row.get("管理番号", "")).strip()
@@ -888,10 +926,18 @@ def show_template_expansion():
                                 
                         is_fit_check_impossible = str(data.get("適合確認可否", "")).strip() == "不可"
                         fit_check_notes = "※こちらの商品は当社側で適合確認ができないメーカーの為、メーカー品番又は純正品番のご確認をお願い致します。" if is_fit_check_impossible else "※適合にご不安がある場合、ご注文前に車体番号をご連絡頂ければ当店にてお調べ致します。"
-                        genuine_block = f"●純正品番\n{gen_no}{suffix}\n{fit_check_notes}" if gen_no else ""
+                        genuine_block = f"●純正品番\n{gen_text_str}\n{fit_check_notes}" if gen_text_str else ""
                         
                         set_block = f"●セット内容\n{set_content}" if set_content else ""
-                        brand_block = f"●ブランド\n{BRAND_DESCRIPTIONS[brand]}" if (brand and brand in BRAND_DESCRIPTIONS) else ""
+
+                        brand_text_parts = []
+                        if brand and brand in BRAND_DESCRIPTIONS:
+                            brand_text_parts.append(BRAND_DESCRIPTIONS[brand])
+                        brand2_text = str(data.get("ブランド2", "")).strip()
+                        if brand2_text and brand2_text in BRAND_DESCRIPTIONS:
+                            brand_text_parts.append(BRAND_DESCRIPTIONS[brand2_text])
+                        
+                        brand_block = "●ブランド\n" + "\n\n".join(brand_text_parts) if brand_text_parts else ""
                         
                         voc_raw = safe_str(data.get("お客様の声"))
                         if voc_raw.startswith("●お客様の声"):
