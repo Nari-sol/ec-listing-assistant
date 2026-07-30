@@ -43,19 +43,14 @@ BRAND_DESCRIPTIONS = {
 # バナー設定
 BANNER_MAPPING = {
     "CAPSOL オルタ": [
-        "https://shopping.c.yimg.jp/lib/solltd/str_ignition_coil1.jpg",
-        "https://shopping.c.yimg.jp/lib/solltd/CAPSOLALT2.jpg",
-        "https://shopping.c.yimg.jp/lib/solltd/CAPSOLALT3.jpg"
+        "https://shopping.c.yimg.jp/lib/solltd/capsol_alta-1.jpg",
+        "https://shopping.c.yimg.jp/lib/solltd/capsol_alta-2.jpg"
     ],
     "CAPSOL 電動ファンモーター": [
-        "https://shopping.c.yimg.jp/lib/solltd/str_ignition_coil1.jpg",
-        "https://shopping.c.yimg.jp/lib/solltd/CAPSOLFAN2.jpg",
-        "https://shopping.c.yimg.jp/lib/solltd/CAPSOLFAN3.jpg"
+        "https://shopping.c.yimg.jp/lib/solltd/CAPSOLFAN1-3.jpg"
     ],
     "HAPAD パッド": [
-        "https://shopping.c.yimg.jp/lib/solltd/yshapad1.jpg",
-        "https://shopping.c.yimg.jp/lib/solltd/yshapad2.jpg",
-        "https://shopping.c.yimg.jp/lib/solltd/yshapad3.jpg"
+        "https://shopping.c.yimg.jp/lib/solltd/HAPAD_PAD_1-3.jpg"
     ],
     "HAPAD ローター": [
         "https://shopping.c.yimg.jp/lib/solltd/ysrotor-1.jpg",
@@ -77,14 +72,10 @@ BANNER_MAPPING = {
         "https://shopping.c.yimg.jp/lib/solltd/capsol_raji1.jpg"
     ],
     "CAPSOL 強化コイル": [
-        "https://shopping.c.yimg.jp/lib/solltd/str_ignition_coil1.jpg",
-        "https://shopping.c.yimg.jp/lib/solltd/str_ignition_coil2.jpg",
-        "https://shopping.c.yimg.jp/lib/solltd/str_ignition_coil3.jpg"
+        "https://shopping.c.yimg.jp/lib/solltd/capsol-coil.jpg"
     ],
     "CAPSOL コンデンサー": [
-        "https://shopping.c.yimg.jp/lib/solltd/str_ignition_coil1.jpg",
-        "https://shopping.c.yimg.jp/lib/solltd/CAPSOLCON2.jpg",
-        "https://shopping.c.yimg.jp/lib/solltd/CAPSOLCON3.jpg"
+        "https://shopping.c.yimg.jp/lib/solltd/CAPSOLCON.jpg"
     ],
     "CAPSOL エアコンフィルター": [
         "https://shopping.c.yimg.jp/lib/solltd/str_ignition_coil1.jpg",
@@ -112,23 +103,21 @@ BANNER_MAPPING = {
         "https://shopping.c.yimg.jp/lib/solltd/capsteering.jpg"
     ],
     "プレミアムHAPAD ローター": [
-        "https://shopping.c.yimg.jp/lib/solltd/prmrotor.jpg",
-        
+        "https://shopping.c.yimg.jp/lib/solltd/prmrotor.jpg"
     ],
     "CAPSOL ACコンプレッサー": [
-        "https://shopping.c.yimg.jp/lib/solltd/capsol-ac-com1.jpg",
-
+        "https://shopping.c.yimg.jp/lib/solltd/capsol-ac-com1.jpg"
     ],
     "CAPSOL O2センサー": [
-        "https://shopping.c.yimg.jp/lib/solltd/str_ignition_coil1.jpg",
-        "https://shopping.c.yimg.jp/lib/solltd/CAP_O2_sensor2.jpg",
-        "https://shopping.c.yimg.jp/lib/solltd/CAP_O2_sensor3.jpg",
+        "https://shopping.c.yimg.jp/lib/solltd/cap_o2_sensor1-3.jpg"
+    ],
+    "CAPSOL スタビ": [
+        "https://shopping.c.yimg.jp/lib/solltd/CAPSOLSUTA1-3.jpg"
     ],
     "CAPSOL NOXセンサー": [
         "https://shopping.c.yimg.jp/lib/solltd/str_ignition_coil1.jpg",
-        "https://shopping.c.yimg.jp/lib/solltd/NOX1.jpg",
+        "https://shopping.c.yimg.jp/lib/solltd/NOX1.jpg"
     ]
-
 }
 
 # 特大商品専用HTMLブロック
