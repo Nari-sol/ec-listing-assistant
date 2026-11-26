@@ -119,6 +119,9 @@ BANNER_MAPPING = {
     "CAPSOL NOXセンサー": [
         "https://shopping.c.yimg.jp/lib/solltd/str_ignition_coil1.jpg",
         "https://shopping.c.yimg.jp/lib/solltd/NOX1.jpg"
+    ],
+    "純正OEM_O2センサー": [
+        "https://shopping.c.yimg.jp/lib/solltd/o2-sensor_banner1.jpg"
     ]
 }
 
